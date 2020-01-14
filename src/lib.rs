@@ -1,8 +1,8 @@
 mod gl_util;
 
-use crate::gl_util::bind_buffer;
 use crate::gl_util::compile_and_link_program;
 use crate::gl_util::get_context;
+use rand::Rng;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
@@ -31,10 +31,6 @@ const FRAGMENT_SHADER_SOURCE: &'static str = r#"
   }
 "#;
 
-const VERTICES: [f32; 12] = [
-  10.0, 20.0, 80.0, 20.0, 10.0, 50.0, 10.0, 50.0, 80.0, 20.0, 80.0, 50.0,
-];
-
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
   let gl = get_context()?;
@@ -43,7 +39,7 @@ pub fn start() -> Result<(), JsValue> {
   let position_attribute_location = gl.get_attrib_location(&program, &"a_position") as u32;
   let resolution_uniform_location = gl.get_uniform_location(&program, &"u_resolution");
   let color_uniform_location = gl.get_uniform_location(&program, "u_color");
-  let buffer = bind_buffer(&gl, &VERTICES);
+  let buffer = gl.create_buffer().unwrap();
   gl.viewport(0, 0, canvas.width() as i32, canvas.height() as i32);
   gl.clear_color(0.0, 0.0, 0.0, 1.0);
   gl.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
@@ -63,7 +59,51 @@ pub fn start() -> Result<(), JsValue> {
     canvas.width() as f32,
     canvas.height() as f32,
   );
-  gl.uniform4f(color_uniform_location.as_ref(), 1.0, 0.0, 0.0, 1.0);
-  gl.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
+  let mut rng = rand::thread_rng();
+  for _ in 0..100 {
+    set_rectangle(
+      &gl,
+      rng.gen_range(0, canvas.width() as usize),
+      rng.gen_range(0, canvas.height() as usize),
+      5,
+      5,
+    );
+    gl.uniform4f(
+      color_uniform_location.as_ref(),
+      rng.gen(),
+      rng.gen(),
+      rng.gen(),
+      1.0,
+    );
+    gl.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
+  }
   Ok(())
+}
+
+fn set_rectangle(
+  gl: &web_sys::WebGlRenderingContext,
+  x: usize,
+  y: usize,
+  width: usize,
+  height: usize,
+) {
+  let x1: f32 = x as f32;
+  let x2: f32 = (x + width) as f32;
+  let y1: f32 = y as f32;
+  let y2: f32 = (y + height) as f32;
+  // Note that `Float32Array::view` is somewhat dangerous (hence the
+  // `unsafe`!). This is creating a raw view into our module's
+  // `WebAssembly.Memory` buffer, but if we allocate more pages for ourself
+  // (aka do a memory allocation in Rust) it'll cause the buffer to change,
+  // causing the `Float32Array` to be invalid.
+  //
+  // As a result, after `Float32Array::view` we have to be very careful not to
+  // do any memory allocations before it's dropped.
+  unsafe {
+    gl.buffer_data_with_array_buffer_view(
+      WebGlRenderingContext::ARRAY_BUFFER,
+      &js_sys::Float32Array::view(&[x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2]),
+      WebGlRenderingContext::STATIC_DRAW,
+    );
+  }
 }

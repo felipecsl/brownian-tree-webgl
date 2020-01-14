@@ -5,26 +5,6 @@ use web_sys::WebGlProgram;
 use web_sys::WebGlRenderingContext;
 use web_sys::WebGlShader;
 
-pub fn bind_buffer(context: &web_sys::WebGlRenderingContext, vertices: &[f32; 12]) -> WebGlBuffer {
-  let buffer = context.create_buffer().unwrap();
-  context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
-  // Note that `Float32Array::view` is somewhat dangerous (hence the
-  // `unsafe`!). This is creating a raw view into our module's
-  // `WebAssembly.Memory` buffer, but if we allocate more pages for ourself
-  // (aka do a memory allocation in Rust) it'll cause the buffer to change,
-  // causing the `Float32Array` to be invalid.
-  //
-  // As a result, after `Float32Array::view` we have to be very careful not to
-  // do any memory allocations before it's dropped.
-  unsafe {
-    context.buffer_data_with_array_buffer_view(
-      WebGlRenderingContext::ARRAY_BUFFER,
-      &js_sys::Float32Array::view(vertices),
-      WebGlRenderingContext::STATIC_DRAW,
-    );
-  }
-  buffer
-}
 
 pub fn get_context() -> Result<web_sys::WebGlRenderingContext, Object> {
   let document = web_sys::window().unwrap().document().unwrap();
