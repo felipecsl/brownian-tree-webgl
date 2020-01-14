@@ -81,7 +81,7 @@ pub fn start() -> Result<(), JsValue> {
   let color_uniform_location = gl.get_uniform_location(&program, "u_color");
   let buffer = gl.create_buffer().unwrap();
   gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
-  set_geometry(&gl, 5, 5);
+  set_geometry(&gl, 3, 3);
   draw_scene(
     &gl,
     &canvas,
@@ -133,7 +133,7 @@ fn draw_scene(
     canvas.height() as f32,
   );
   let mut rng = rand::thread_rng();
-  for _ in 0..100 {
+  for _ in 0..1000 {
     gl.uniform4f(
       color_uniform_location,
       rng.gen(),
