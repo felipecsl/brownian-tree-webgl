@@ -84,3 +84,25 @@ pub fn link_program(
     )
   }
 }
+
+pub fn set_geometry(gl: &web_sys::WebGlRenderingContext, width: usize, height: usize) {
+  let x1: f32 = 0.0 as f32;
+  let x2: f32 = width as f32;
+  let y1: f32 = 0.0 as f32;
+  let y2: f32 = height as f32;
+  // Note that `Float32Array::view` is somewhat dangerous (hence the
+  // `unsafe`!). This is creating a raw view into our module's
+  // `WebAssembly.Memory` buffer, but if we allocate more pages for ourself
+  // (aka do a memory allocation in Rust) it'll cause the buffer to change,
+  // causing the `Float32Array` to be invalid.
+  //
+  // As a result, after `Float32Array::view` we have to be very careful not to
+  // do any memory allocations before it's dropped.
+  unsafe {
+    gl.buffer_data_with_array_buffer_view(
+      WebGlRenderingContext::ARRAY_BUFFER,
+      &js_sys::Float32Array::view(&[x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2]),
+      WebGlRenderingContext::STATIC_DRAW,
+    );
+  }
+}
