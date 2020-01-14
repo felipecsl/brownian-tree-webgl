@@ -56,17 +56,14 @@ impl Interval {
     let closure = Closure::wrap(Box::new(f) as Box<dyn FnMut()>);
     // Pass the closuer to JS, to run every n milliseconds.
     let token = setInterval(&closure, millis);
-    Interval {
-      closure,
-      token
-    }
+    Interval { closure, token }
   }
 }
 
 // When the Interval is destroyed, cancel its `setInterval` timer.
 impl Drop for Interval {
   fn drop(&mut self) {
-      cancelInterval(self.token);
+    cancelInterval(self.token);
   }
 }
 
@@ -134,13 +131,7 @@ fn draw_scene(
   );
   let mut rng = rand::thread_rng();
   for _ in 0..1000 {
-    gl.uniform4f(
-      color_uniform_location,
-      rng.gen(),
-      rng.gen(),
-      rng.gen(),
-      1.0,
-    );
+    gl.uniform4f(color_uniform_location, rng.gen(), rng.gen(), rng.gen(), 1.0);
     let translation = [
       rng.gen_range(0.0, canvas.width() as f32),
       rng.gen_range(0.0, canvas.height() as f32),
