@@ -1,10 +1,8 @@
 use js_sys::Object;
 use wasm_bindgen::JsCast;
-use web_sys::WebGlBuffer;
 use web_sys::WebGlProgram;
 use web_sys::WebGlRenderingContext;
 use web_sys::WebGlShader;
-
 
 pub fn get_context() -> Result<web_sys::WebGlRenderingContext, Object> {
   let document = web_sys::window().unwrap().document().unwrap();
