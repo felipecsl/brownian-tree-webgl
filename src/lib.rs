@@ -1,6 +1,9 @@
+mod data;
 mod gl_util;
+mod node;
 mod scene;
 
+use crate::data::ELEMENTS;
 use crate::scene::Scene;
 use wasm_bindgen::prelude::*;
 
@@ -33,7 +36,8 @@ const FRAGMENT_SHADER_SOURCE: &'static str = r#"
 #[wasm_bindgen]
 extern "C" {
   fn setInterval(closure: &Closure<dyn FnMut()>, millis: u32) -> f64;
-  fn cancelInterval(token: f64);
+  fn clearInterval(token: f64);
+  fn alert(msg: &str);
 }
 
 #[wasm_bindgen]
@@ -57,13 +61,14 @@ impl Interval {
 // When the Interval is destroyed, cancel its `setInterval` timer.
 impl Drop for Interval {
   fn drop(&mut self) {
-    cancelInterval(self.token);
+    clearInterval(self.token);
   }
 }
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-  let scene = Scene::new(VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
+  let elements = ELEMENTS.lines();
+  let scene = Scene::new(elements, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
   scene.draw_scene();
   Interval::new(1_00, move || {
     scene.draw_scene();
