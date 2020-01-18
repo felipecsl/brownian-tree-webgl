@@ -85,11 +85,11 @@ pub fn link_program(
   }
 }
 
-pub fn set_geometry(gl: &web_sys::WebGlRenderingContext, width: usize, height: usize) {
-  let x1: f32 = 0.0 as f32;
-  let x2: f32 = width as f32;
-  let y1: f32 = 0.0 as f32;
-  let y2: f32 = height as f32;
+pub fn set_geometry(gl: &WebGlRenderingContext, x: f32, y: f32, width: usize, height: usize) {
+  let x1: f32 = x;
+  let x2: f32 = x + width as f32;
+  let y1: f32 = y;
+  let y2: f32 = y + height as f32;
   // Note that `Float32Array::view` is somewhat dangerous (hence the
   // `unsafe`!). This is creating a raw view into our module's
   // `WebAssembly.Memory` buffer, but if we allocate more pages for ourself

@@ -70,8 +70,8 @@ pub fn start() -> Result<(), JsValue> {
   let elements = ELEMENTS.lines();
   let scene = Scene::new(elements, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
   scene.draw_scene();
-  Interval::new(1_00, move || {
-    scene.draw_scene();
-  });
+  // Interval::new(1_00, move || {
+  //   scene.draw_scene();
+  // });
   Ok(())
 }

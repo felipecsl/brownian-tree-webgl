@@ -36,7 +36,7 @@ impl Scene {
     let buffer = gl.create_buffer().unwrap();
     gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
     let nodes = Scene::parse_items(items);
-    set_geometry(&gl, 2, 2);
+    set_geometry(&gl, (canvas.width() / 2) as f32, (canvas.height() / 2) as f32, 2, 2);
     Scene {
       gl,
       program,
