@@ -1,9 +1,7 @@
-mod data;
 mod gl_util;
 mod node;
 mod scene;
 
-use crate::data::ELEMENTS;
 use crate::scene::Scene;
 use wasm_bindgen::prelude::*;
 
@@ -67,7 +65,7 @@ impl Drop for Interval {
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-  let elements = ELEMENTS.lines();
+  let elements = include_str!("input.csv").lines();
   let scene = Scene::new(elements, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
   scene.draw_scene();
   // Interval::new(1_00, move || {

@@ -36,7 +36,15 @@ impl Scene {
     let buffer = gl.create_buffer().unwrap();
     gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
     let nodes = Scene::parse_items(items);
-    set_geometry(&gl, (canvas.width() / 2) as f32, (canvas.height() / 2) as f32, 2, 2);
+    // since the input data uses world coordinates (-inf, +inf), we need to place elements
+    // at the (x,y) at the center of screen and translate them according to position
+    set_geometry(
+      &gl,
+      (canvas.width() / 2) as f32,
+      (canvas.height() / 2) as f32,
+      1,
+      1,
+    );
     Scene {
       gl,
       program,
@@ -52,9 +60,11 @@ impl Scene {
   fn parse_items(mut items: Lines<'static>) -> Vec<Node> {
     let mut nodes: Vec<Node> = vec![];
     while let Some(item) = items.next() {
-      match Node::parse(item) {
-        Ok(node) => nodes.push(node),
-        Err(e) => println!  ("Failed to parse node {}", e),
+      if !item.is_empty() {
+        match Node::parse(item) {
+          Ok(node) => nodes.push(node),
+          Err(e) => println!("Failed to parse node {}", e),
+        }
       }
     }
     return nodes;
@@ -83,7 +93,8 @@ impl Scene {
       height as f32,
     );
     for (_, node) in self.nodes.iter().enumerate() {
-      gl.uniform4f(self.color_uniform.as_ref(), 1.0, 1.0, 1.0, 1.0);
+      let color = node.z / 128 as f32; // color [-1,1]
+      gl.uniform4f(self.color_uniform.as_ref(), color, color * 1.3, color, 1.0);
       let translation = [node.x, node.y];
       gl.uniform2fv_with_f32_array(self.translation_uniform.as_ref(), &translation);
       gl.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
