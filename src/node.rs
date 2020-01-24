@@ -3,6 +3,7 @@ use core::num::ParseFloatError;
 use core::num::ParseIntError;
 use std::str::FromStr;
 
+/** Parse a node object from a CSV line */
 pub fn parse_node(line: &str) -> Result<Node, String> {
   let parts: Vec<&str> = line.split(',').collect();
   fn int_err(err: ParseIntError) -> String {

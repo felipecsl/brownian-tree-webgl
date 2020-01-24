@@ -105,11 +105,20 @@ impl Scene {
       width as f32,
       height as f32,
     );
+    let mut max_z = 0f64;
+    let mut min_z = 0f64;
     for (_, node) in self.nodes.iter().enumerate() {
-      let z = node.z as f32;
-      let red = z / 256.0;
-      let green = (z / 128.0) * 1.2;
-      let blue = z / 256.0;
+      max_z = max_z.max(node.z);
+      min_z = min_z.min(node.z);
+    }
+    // (min: -3, max: 7) -> range: 10
+    let z_range = (max_z - min_z) as f32;
+    for (_, node) in self.nodes.iter().enumerate() {
+      // normalized z is in the range [0..1]
+      let normalized_z = (node.z - min_z) as f32 / z_range;
+      let red = normalized_z * 0.3;
+      let green = normalized_z * 0.9;
+      let blue = normalized_z * 0.3;
       gl.uniform4f(self.color_uniform.as_ref(), red, green, blue, 1.0);
       let translation = [node.x as f32, node.y as f32];
       gl.uniform2fv_with_f32_array(self.translation_uniform.as_ref(), &translation);
