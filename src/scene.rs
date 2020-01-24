@@ -1,8 +1,8 @@
 use crate::gl_util::compile_and_link_program;
 use crate::gl_util::get_context;
 use crate::gl_util::set_geometry;
-use crate::node::Node;
-use std::str::Lines;
+use crate::node::parse_node;
+use crate::Node;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
 use web_sys::WebGlProgram;
@@ -21,7 +21,7 @@ pub struct Scene {
 }
 
 impl Scene {
-  pub fn new(items: Lines<'static>, vertex_shader: &str, fragment_shader: &str) -> Scene {
+  pub fn new(vertex_shader: &str, fragment_shader: &str) -> Scene {
     let gl = get_context().unwrap();
     let program = compile_and_link_program(&gl, vertex_shader, fragment_shader).unwrap();
     let canvas = gl
@@ -35,7 +35,8 @@ impl Scene {
     let color_uniform = gl.get_uniform_location(&program, "u_color");
     let buffer = gl.create_buffer().unwrap();
     gl.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&buffer));
-    let nodes = Scene::parse_items(items);
+    let nodes = Scene::parse_items(include_str!("input.csv"));
+    // let nodes = Scene::gen_items(500);
     // since the input data uses world coordinates (-inf, +inf), we need to place elements
     // at the (x,y) at the center of screen and translate them according to position
     set_geometry(
@@ -57,11 +58,23 @@ impl Scene {
     }
   }
 
-  fn parse_items(mut items: Lines<'static>) -> Vec<Node> {
+  // fn gen_items(total: u32) -> Vec<Node> {
+  //   let mut ptr: *mut Node = unsafe { add_particles(total as i32) };
+  //   let mut ret: Vec<Node> = vec![];
+  //   let end_rounded_up = ptr.wrapping_offset(total as isize);
+  //   while ptr != end_rounded_up {
+  //     unsafe { ret.push(*ptr) };
+  //     ptr = ptr.wrapping_offset(1);
+  //   }
+  //   return ret;
+  // }
+
+  fn parse_items(csv_source: &str) -> Vec<Node> {
+    let mut items = csv_source.lines();
     let mut nodes: Vec<Node> = vec![];
     while let Some(item) = items.next() {
       if !item.is_empty() {
-        match Node::parse(item) {
+        match parse_node(item) {
           Ok(node) => nodes.push(node),
           Err(e) => println!("Failed to parse node {}", e),
         }
@@ -93,9 +106,12 @@ impl Scene {
       height as f32,
     );
     for (_, node) in self.nodes.iter().enumerate() {
-      let color = node.z / 128 as f32; // color [-1,1]
-      gl.uniform4f(self.color_uniform.as_ref(), color, color * 1.3, color, 1.0);
-      let translation = [node.x, node.y];
+      let z = node.z as f32;
+      let red = z / 256.0;
+      let green = (z / 128.0) * 1.2;
+      let blue = z / 256.0;
+      gl.uniform4f(self.color_uniform.as_ref(), red, green, blue, 1.0);
+      let translation = [node.x as f32, node.y as f32];
       gl.uniform2fv_with_f32_array(self.translation_uniform.as_ref(), &translation);
       gl.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
     }

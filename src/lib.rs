@@ -1,3 +1,5 @@
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
 mod gl_util;
 mod node;
 mod scene;
@@ -65,8 +67,7 @@ impl Drop for Interval {
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-  let elements = include_str!("input.csv").lines();
-  let scene = Scene::new(elements, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
+  let scene = Scene::new(VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
   scene.draw_scene();
   // Interval::new(1_00, move || {
   //   scene.draw_scene();
