@@ -7,6 +7,7 @@ use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
 use web_sys::WebGlProgram;
 use web_sys::WebGlRenderingContext;
+use rand::Rng;
 use web_sys::WebGlUniformLocation;
 
 pub struct Scene {
@@ -111,14 +112,16 @@ impl Scene {
       max_z = max_z.max(node.z);
       min_z = min_z.min(node.z);
     }
+    let mut rng = rand::thread_rng();
     // (min: -3, max: 7) -> range: 10
-    let z_range = (max_z - min_z) as f32;
+    let z_range = (max_z - min_z) as i32;
     for (_, node) in self.nodes.iter().enumerate() {
-      // normalized z is in the range [0..1]
-      let normalized_z = (node.z - min_z) as f32 / z_range;
-      let red = normalized_z * 0.3;
-      let green = normalized_z * 0.9;
-      let blue = normalized_z * 0.3;
+      let absolute_z = (node.z - min_z) as f32;
+      // normalized_z is in the range [0..1]
+      let normalized_z = rng.gen_range(absolute_z * 0.5, absolute_z * 1.5) / z_range as f32;
+      let red = normalized_z * rng.gen_range(0.1, 0.5);
+      let green = normalized_z * rng.gen_range(0.7, 1.0);
+      let blue = normalized_z * rng.gen_range(0.1, 0.5);
       gl.uniform4f(self.color_uniform.as_ref(), red, green, blue, 1.0);
       let translation = [node.x as f32, node.y as f32];
       gl.uniform2fv_with_f32_array(self.translation_uniform.as_ref(), &translation);
