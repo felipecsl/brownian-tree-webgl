@@ -116,9 +116,10 @@ impl Scene {
     // (min: -3, max: 7) -> range: 10
     let z_range = (max_z - min_z) as i32;
     for (_, node) in self.nodes.iter().enumerate() {
+      // absolute_z is in the range [0..max_z]
       let absolute_z = (node.z - min_z) as f32;
       // normalized_z is in the range [0..1]
-      let normalized_z = rng.gen_range(absolute_z * 0.5, absolute_z * 1.5) / z_range as f32;
+      let normalized_z = rng.gen_range(absolute_z * 0.7, absolute_z * 1.3) / z_range as f32;
       let red = normalized_z * rng.gen_range(0.1, 0.5);
       let green = normalized_z * rng.gen_range(0.7, 1.0);
       let blue = normalized_z * rng.gen_range(0.1, 0.5);
