@@ -2,12 +2,14 @@ use crate::gl_util::compile_and_link_program;
 use crate::gl_util::get_context;
 use crate::gl_util::set_geometry;
 use crate::node::parse_node;
+use crate::scarlet::colormap::ColorMap;
 use crate::Node;
+use scarlet::color::RGBColor;
+use scarlet::colormap::ListedColorMap;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
 use web_sys::WebGlProgram;
 use web_sys::WebGlRenderingContext;
-use rand::Rng;
 use web_sys::WebGlUniformLocation;
 
 pub struct Scene {
@@ -106,27 +108,41 @@ impl Scene {
       width as f32,
       height as f32,
     );
-    let mut max_z = 0f64;
-    let mut min_z = 0f64;
-    for (_, node) in self.nodes.iter().enumerate() {
-      max_z = max_z.max(node.z);
-      min_z = min_z.min(node.z);
-    }
-    let mut rng = rand::thread_rng();
-    // (min: -3, max: 7) -> range: 10
-    let z_range = (max_z - min_z) as i32;
-    for (_, node) in self.nodes.iter().enumerate() {
-      // absolute_z is in the range [0..max_z]
-      let absolute_z = (node.z - min_z) as f32;
-      // normalized_z is in the range [0..1]
-      let normalized_z = rng.gen_range(absolute_z * 0.7, absolute_z * 1.3) / z_range as f32;
-      let red = normalized_z * rng.gen_range(0.1, 0.5);
-      let green = normalized_z * rng.gen_range(0.7, 1.0);
-      let blue = normalized_z * rng.gen_range(0.1, 0.5);
-      gl.uniform4f(self.color_uniform.as_ref(), red, green, blue, 1.0);
+    let z_coords = self.nodes.iter().map(|n| n.z).collect::<Vec<f64>>();
+    let rgb_coords = z_coords_to_rgb(&z_coords);
+    for (i, node) in self.nodes.iter().enumerate() {
+      gl.uniform4f(
+        self.color_uniform.as_ref(),
+        rgb_coords[i].r as f32,
+        rgb_coords[i].g as f32,
+        rgb_coords[i].b as f32,
+        1.0,
+      );
       let translation = [node.x as f32, node.y as f32];
       gl.uniform2fv_with_f32_array(self.translation_uniform.as_ref(), &translation);
       gl.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, 6);
+    }
+
+    fn vec_min<T: PartialOrd + Copy>(v: &Vec<T>) -> T {
+      *v.iter().min_by(|&x, y| x.partial_cmp(y).unwrap()).unwrap()
+    }
+
+    fn vec_max<T: PartialOrd + Copy>(v: &Vec<T>) -> T {
+      *v.iter().max_by(|&x, y| x.partial_cmp(y).unwrap()).unwrap()
+    }
+
+    fn z_coords_to_rgb(z_coords: &Vec<f64>) -> Vec<RGBColor> {
+      let min_z = vec_min(&z_coords);
+      let max_z = vec_max(&z_coords);
+      // (min: -3, max: 7) -> range: 10
+      let z_range = (max_z - min_z) as i32;
+      let colormap = ListedColorMap::viridis();
+      // limit Z to the range [0..max_z] -> [0..1]
+      let normalized_coords = z_coords
+        .iter()
+        .map(|z| (z - min_z) / z_range as f64)
+        .collect::<Vec<f64>>();
+      colormap.transform(normalized_coords)
     }
   }
 }

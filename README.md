@@ -3,7 +3,7 @@
 This is a work-in-progress, toy project aimed at creating a 3D visualization of a brownian tree using
 Rust WebAsm and WebGL.
 
-# Prerequisites
+## Prerequisites
 
 * Install Rust (eg.: [using rustup](https://www.rust-lang.org/tools/install))
 * Install [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)

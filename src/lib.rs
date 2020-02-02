@@ -6,6 +6,7 @@ mod scene;
 
 use crate::scene::Scene;
 use wasm_bindgen::prelude::*;
+extern crate scarlet;
 
 const VERTEX_SHADER_SOURCE: &'static str = r#"
   attribute vec2 a_position;
