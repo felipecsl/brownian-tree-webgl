@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 bindgen = "0.52.0"
 
 [dependencies]
-image = "0.22.3"
+image = "0.23.12"
 rand = { version = "0.6.5", features = ["wasm-bindgen"] }
 js-sys = "0.3.35"
 wasm-bindgen = "0.2.58"
