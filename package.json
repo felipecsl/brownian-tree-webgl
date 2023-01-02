@@ -7,8 +7,8 @@
     "@wasm-tool/wasm-pack-plugin": "1.1.0",
     "text-encoding": "^0.7.0",
     "html-webpack-plugin": "^5.5.0",
-    "webpack": "^4.29.4",
-    "webpack-cli": "^3.3.12",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1"
   }
 }
